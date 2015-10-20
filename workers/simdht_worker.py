@@ -281,6 +281,7 @@ class Master(Thread):
         self.metadata_queue = Queue()
         self.dbconn = mdb.connect(DB_HOST, DB_USER, DB_PASS, 'ssbc', charset='utf8')
         self.dbconn.autocommit(False)
+        self.dbconn.ping(True)
         self.dbcurr = self.dbconn.cursor()
         self.dbcurr.execute('SET NAMES utf8')
         self.n_reqs = self.n_valid = self.n_new = 0
@@ -332,11 +333,13 @@ class Master(Thread):
                 if dtype == 'pt':
                     t = threading.Thread(target=simMetadata.download_metadata, args=(address, binhash, self.metadata_queue))
                     t.setDaemon(True)
+                    threading.stack_size(65535)
                     t.start()
                     self.n_downloading_pt += 1
                 elif dtype == 'lt' and self.n_downloading_lt < MAX_QUEUE_LT:
                     t = threading.Thread(target=ltMetadata.download_metadata, args=(address, binhash, self.metadata_queue))
                     t.setDaemon(True)
+                    threading.stack_size(65535)
                     t.start()
                     self.n_downloading_lt += 1
 
